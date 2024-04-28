@@ -17,8 +17,14 @@ public class PlayerInputHandler : MonoBehaviour
     private void HandleAcceleration()
     {
         float accelerationInput = _playerInput.actions["Accelerate"].ReadValue<float>();
-        _playerCar.Accelerate(accelerationInput > 0 ? accelerationInput : 0);
-        _playerCar.Decelerate(accelerationInput < 0 ? accelerationInput : 0);
+        if ( accelerationInput > 0)
+        {
+            _playerCar.Accelerate(accelerationInput);
+        }
+        else
+        {
+            _playerCar.Decelerate(accelerationInput);
+        }
     }
 
     private void HandleSteering()

@@ -7,7 +7,8 @@ using UnityEngine;
 public class Car : MonoBehaviour
 { 
     [SerializeField] private Rigidbody _carRigidBody;
-    [SerializeField] private SuspensionComponent _suspensionComponent;
+    [SerializeField] private WheelSuspensionComponent _wheelSuspensionComponent;
+    [SerializeField] private GameObject[] _tires = new GameObject[4];
     [SerializeField] private Transform _accelerationTransform;
     [SerializeField] private float _accelerationForce = 25.0f;
     [SerializeField] private float _backwardAccelerationForce = 10.0f;
@@ -20,7 +21,7 @@ public class Car : MonoBehaviour
     private Vector3 _currentCarLocalVelocity = Vector3.zero;
     private float _carVelocityRatio = 0.0f;
 
-    public bool IsGrounded => _suspensionComponent.IsGrounded();
+    public bool IsGrounded => _wheelSuspensionComponent.IsGrounded();
 
     private void Start()
     {
@@ -29,13 +30,14 @@ public class Car : MonoBehaviour
 
     private void FixedUpdate()
     {
-        ApplySuspension();
+        _wheelSuspensionComponent.ApplySuspension(_carRigidBody);
         ApplySidewaysDrag();
         UpdateVelocity();
     }
 
     public void Accelerate(float accelerationInput)
     {
+        _wheelSuspensionComponent.RotateWheels(accelerationInput, _carVelocityRatio);
         if (!IsGrounded) return;
         Vector3 force = _accelerationForce * accelerationInput * transform.forward;
 
@@ -44,16 +46,19 @@ public class Car : MonoBehaviour
 
     public void Decelerate(float deccelerationInput)
     {
+        _wheelSuspensionComponent.RotateWheels(deccelerationInput, _carVelocityRatio);
         if (!IsGrounded) return;
         Vector3 force = _backwardAccelerationForce * deccelerationInput * transform.forward;
 
         _carRigidBody.AddForceAtPosition(force, _accelerationTransform.position, ForceMode.Acceleration);
     }
+
     public void Steer(float steerInput)
     {
+        _wheelSuspensionComponent.SteerWheels(steerInput);
         if (!IsGrounded) return;
         float steeringDirection = Mathf.Sign(Vector3.Dot(transform.forward, _carRigidBody.velocity));
-        Vector3 torque = _steerStrenght * steerInput * _turningCurve.Evaluate(_carVelocityRatio) * steeringDirection * transform.up;
+        Vector3 torque = _steerStrenght * steerInput * Mathf.Abs(_turningCurve.Evaluate(_carVelocityRatio)) * steeringDirection * transform.up;
 
         _carRigidBody.AddTorque(torque, ForceMode.Acceleration);
     }
@@ -62,7 +67,7 @@ public class Car : MonoBehaviour
     {
         if (!IsGrounded) return;
 
-        if (_carRigidBody.velocity.magnitude < 0.1f)
+        if (_carRigidBody.velocity.magnitude < 0.05f)
         {
             _carRigidBody.velocity = Vector3.zero;
             return;
@@ -72,14 +77,6 @@ public class Car : MonoBehaviour
         Vector3 brakeForceVector = brakeDirection * _breakingForce;
 
         _carRigidBody.AddForceAtPosition(brakeForceVector, _accelerationTransform.position, ForceMode.Acceleration);
-    }
-
-    private void ApplySuspension()
-    {
-        foreach (var suspensionPoint in _suspensionComponent.SuspensionPoints)
-        {
-            _suspensionComponent.ApplySuspension(suspensionPoint, _carRigidBody);
-        }
     }
 
     private void ApplySidewaysDrag()
