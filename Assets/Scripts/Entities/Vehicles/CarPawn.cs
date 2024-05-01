@@ -1,26 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(Rigidbody))]
-public class Car : MonoBehaviour
+public class CarPawn : MonoBehaviour
 { 
     [SerializeField] private Rigidbody _carRigidBody;
-    [SerializeField] private WheelSuspensionComponent _wheelSuspensionComponent;
+    [SerializeField] private CarSuspension _wheelSuspensionComponent;
     [SerializeField] private Transform _centerOfMassTransform;
 
-    [SerializeField] private List<SkidEffect> _skidEffects;
-    [SerializeField] private EngineSound _engineSound;
-    [SerializeField] private SkidSound _skidSound;
-
     [SerializeField] private float _accelerationForce = 25.0f;
-    [SerializeField] private float _backwardAccelerationForce = 10.0f;
+    [SerializeField] private float _backwardAccelerationForce = 20.0f;
     [SerializeField] private float _breakingDecelerationForce = 100.0f;
     [SerializeField] private float _breakingDragCoeffitient = 0.5f;
     [SerializeField] private float _maxSpeed = 100.0f;
     [SerializeField] private float _steerStrenght = 15.0f;
-    [SerializeField] private AnimationCurve _turningCurve;
     [SerializeField] private float _dragCoeffitient = 1.0f;
-    [SerializeField] private float _minSkidSideVelocity = 10.0f;
+    [SerializeField] private AnimationCurve _turningCurve;
+
+    public UnityEvent<float> OnSkid;
+    public UnityEvent<bool> OnHandBrake;
+    public UnityEvent<float> OnVelocityChanged;
 
     private Vector3 _currentCarLocalVelocity = Vector3.zero;
     private float _carVelocityRatio = 0.0f;
@@ -37,12 +37,6 @@ public class Car : MonoBehaviour
         _wheelSuspensionComponent.ApplySuspension(_carRigidBody);
         ApplySidewaysDrag();
         UpdateVelocity();
-    }
-
-    private void Update()
-    {
-        ApplySkidEffects();
-        _engineSound.SetPitch(_carVelocityRatio);
     }
 
     public void Accelerate(float accelerationInput)
@@ -75,6 +69,7 @@ public class Car : MonoBehaviour
         Vector3 torque = _steerStrenght * steerInput * _turningCurve.Evaluate(Mathf.Abs(_carVelocityRatio)) * steeringDirection * transform.up;
 
         _carRigidBody.AddTorque(torque, ForceMode.Acceleration);
+        OnSkid.Invoke(_currentCarLocalVelocity.x);
     }
 
     public void Handbrake()
@@ -106,25 +101,7 @@ public class Car : MonoBehaviour
     {
         _currentCarLocalVelocity = transform.InverseTransformDirection(_carRigidBody.velocity);
         _carVelocityRatio = _currentCarLocalVelocity.z / _maxSpeed;
-    }
 
-    private void ApplySkidEffects()
-    {
-        if (IsGrounded && _carVelocityRatio > 0 && Mathf.Abs(_currentCarLocalVelocity.x) > _minSkidSideVelocity)
-        {
-            foreach(var effect in _skidEffects)
-            {
-                effect.Toggle(true);
-                _skidSound.Toggle(true);
-            }
-        }
-        else
-        {
-            foreach (var effect in _skidEffects)
-            {
-                effect.Toggle(false);
-                effect.Toggle(false);
-            }
-        }
+        OnVelocityChanged.Invoke(_carVelocityRatio);
     }
 }

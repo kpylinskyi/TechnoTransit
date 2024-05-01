@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-public class SkidSmokeEffect : SkidEffect
+public class SkidSmoke : MonoBehaviour, ITogglableEffect
 {
-    [SerializeField] private ParticleSystem[] _skidSmokeParticleSystems = new ParticleSystem[2];
+    [SerializeField] private ParticleSystem[] _skidSmokeParticleSystems;
 
-    public override void Toggle(bool active)
+    public void Toggle(bool active)
     {
         foreach (var skidSmokeParticleSystem in _skidSmokeParticleSystems)
         {

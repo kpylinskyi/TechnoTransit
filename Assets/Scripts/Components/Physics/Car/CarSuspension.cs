@@ -1,9 +1,9 @@
 using System.Linq;
 using UnityEngine;
 
-public class WheelSuspensionComponent : MonoBehaviour
+public class CarSuspension : MonoBehaviour
 {
-    [SerializeField] private WheelSuspension[] _wheelSuspensionPoints;
+    [SerializeField] private WheelHub[] _wheelSuspensionPoints;
     [SerializeField] private float _springStiffness;
     [SerializeField] private float _damperStiffness;
     [SerializeField] private float _restLength;
@@ -14,11 +14,12 @@ public class WheelSuspensionComponent : MonoBehaviour
     {
         return _wheelSuspensionPoints.Any(p => p.IsGrounded);
     }
+
     public void SteerWheels(float steerInput)
     {
         foreach (var wheelSuspensionPoint in _wheelSuspensionPoints)
         {
-            if (wheelSuspensionPoint is SteeringWheelSuspension steeringWheelSuspensionPoint)
+            if (wheelSuspensionPoint is SteeringWheelHub steeringWheelSuspensionPoint)
             {
                 steeringWheelSuspensionPoint.SteerWheel(steerInput);
             }
@@ -29,7 +30,7 @@ public class WheelSuspensionComponent : MonoBehaviour
     {
         foreach (var wheelSuspensionPoint in _wheelSuspensionPoints)
         {
-            if (wheelSuspensionPoint is SteeringWheelSuspension steeringWheelSuspensionPoint)
+            if (wheelSuspensionPoint is SteeringWheelHub steeringWheelSuspensionPoint)
             {
                 steeringWheelSuspensionPoint.RotateWheel(carVelocityRatio);
             }

@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class PlayerInputHandler : MonoBehaviour
 {
     [SerializeField] private PlayerInput _playerInput;
-    [SerializeField] private Car _playerCar;
+    [SerializeField] private CarPawn _playerCar;
     private bool _handbrakeEngaged = false;
 
     private void FixedUpdate()

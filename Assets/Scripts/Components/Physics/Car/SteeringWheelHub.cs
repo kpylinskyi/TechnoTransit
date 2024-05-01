@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 
-public class SteeringWheelSuspension : WheelSuspension
+public class SteeringWheelHub : WheelHub
 {
     [SerializeField] private Transform _wheelSteeringPointTransform;
     [SerializeField] private float _maxWheelSteerAngle = 30.0f;

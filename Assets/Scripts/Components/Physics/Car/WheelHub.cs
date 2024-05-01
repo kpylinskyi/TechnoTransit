@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
-
-public class WheelSuspension : MonoBehaviour
+public class WheelHub : MonoBehaviour
 {
     [SerializeField] private Transform _wheelTransform;
     [SerializeField] private float _tireRotationSpeed = 2500.0f;
 
+    public UnityEvent OnSkid;
     public bool IsGrounded;
 
     public void RotateWheel(float accelerationInput)
